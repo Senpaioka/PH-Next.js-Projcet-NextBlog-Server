@@ -101,6 +101,7 @@ client.connect()
 const database = client.db('next-blog');
 const user_collection = database.collection('users');
 const blog_collection = database.collection('blogs');
+const bookmark_collection = database.collection('bookmarks');
 
 
   /* API Calls */
@@ -222,6 +223,107 @@ app.get('/blog-details/:id', firebaseVerificationToken, async(req, res) => {
      res.status(404).json({message: "Blog Not Found."}); 
     }
 })
+
+
+
+
+
+// Add a bookmark
+app.post('/bookmark/:blogId', firebaseVerificationToken, async (req, res) => {
+  const user = req.user;
+  const blogId = req.params.blogId;
+
+  try {
+    const exists = await bookmark_collection.findOne({
+      userId: user.email,
+      blogId,
+    });
+
+    if (exists) {
+      return res.status(400).json({ message: 'Already bookmarked' });
+    }
+
+    await bookmark_collection.insertOne({
+      userId: user.email,
+      blogId,
+      createdAt: new Date(),
+    });
+
+    res.status(201).json({ message: 'Bookmark added' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to add bookmark' });
+  }
+});
+
+
+// Remove a bookmark
+app.delete('/bookmark/:blogId', firebaseVerificationToken, async (req, res) => {
+  const user = req.user;
+  const blogId = req.params.blogId;
+
+  try {
+    await bookmark_collection.deleteOne({
+      userId: user.email,
+      blogId,
+    });
+    res.status(200).json({ message: 'Bookmark removed' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to remove bookmark' });
+  }
+});
+
+
+// Get user's bookmarks
+app.get('/bookmarks', firebaseVerificationToken, async (req, res) => {
+  const user = req.user;
+
+  try {
+    const bookmarks = await bookmark_collection
+      .find({ userId: user.email })
+      .toArray();
+
+    res.json(bookmarks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch bookmarks' });
+  }
+});
+
+
+// get bookmarked full blog
+app.get("/saved-blog", firebaseVerificationToken, async (req, res) => {
+  const user = req.user;
+  const email = user.email;
+
+  try {
+    // 1. Get all bookmarks for this user
+    const bookmarks = await bookmark_collection
+      .find({ userId: email }) // assuming you store userId/email in bookmarks
+      .toArray();
+
+    // 2. Extract blog IDs
+    const blogIds = bookmarks.map((b) => new ObjectId(b.blogId));
+
+    if (blogIds.length === 0) {
+      return res.json([]); // No bookmarks
+    }
+
+    // 3. Fetch full blog details
+    const blogs = await blog_collection
+      .find({ _id: { $in: blogIds } })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    // 4. Return blogs
+    res.send(blogs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch bookmarked blogs" });
+  }
+});
+
 
 
 
