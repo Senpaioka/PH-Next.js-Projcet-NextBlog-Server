@@ -114,8 +114,10 @@ app.post("/set-token", (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    // secure: process.env.NODE_ENV === "production",
+    secure: true, 
+    // sameSite: "Strict",
+    sameSite: "none", 
     maxAge: 1000 * 60 * 60 * 24, // 1 day
   });
 
