@@ -392,6 +392,98 @@ app.delete('/blog/:id', firebaseVerificationToken, async (req, res) => {
 
 
 
+// get user blog data for update
+app.get('/blog-data/:id', firebaseVerificationToken, async (req, res) => {
+  const userId = req.user?.email;
+  const blogId = req.params.id;
+
+  try {
+    // Validate user
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized access" });
+    }
+
+    // Validate blogId
+    if (!blogId || !ObjectId.isValid(blogId)) {
+      return res.status(400).json({ message: "Invalid blog ID" });
+    }
+
+    const objectId = new ObjectId(blogId);
+
+    // Fetch the blog for this user only
+    const blog = await blog_collection.findOne({ _id: objectId, userId });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found or you do not have access" });
+    }
+
+    res.json(blog);
+
+  } catch (error) {
+    console.error("Error fetching blog data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+// updating blog
+app.post('/update-blog/:blogId', firebaseVerificationToken, async (req, res) => {
+  try {
+    const userId = req.user?.email;           // authenticated user
+    const blogId = req.params.blogId;         // blog ID
+    const updatedData = req.body;             // updated fields from frontend
+
+    // --- Validate inputs ---
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!blogId || blogId.length !== 24) {
+      return res.status(400).json({ message: "Invalid blog ID" });
+    }
+
+    // validate updatedData fields
+    const allowedFields = ["title", "category", "shortDesc", "imageUrl", "content"];
+    const updatePayload = {};
+    for (const key of allowedFields) {
+      if (updatedData[key] && updatedData[key].trim() !== "") {
+        updatePayload[key] = updatedData[key].trim();
+      }
+    }
+
+    // Add timestamp
+    updatePayload.updated_at = new Date();
+
+    // --- Convert blogId safely ---
+    const objectId = new ObjectId(blogId);
+
+    // --- Find the blog ---
+    const blog = await blog_collection.findOne({ _id: objectId });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // --- Check ownership ---
+    if (blog.userId !== userId) {
+      return res.status(403).json({ message: "Forbidden: You cannot update this blog" });
+    }
+
+    // --- Perform update ---
+    const result = await blog_collection.updateOne(
+      { _id: objectId },
+      { $set: updatePayload }
+    );
+
+    return res.json({ message: "Blog updated successfully", updatedFields: updatePayload });
+
+  } catch (error) {
+    console.error("Update Blog Error:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+
 
 //404
 app.all(/.*/, (req, res) => {
