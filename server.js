@@ -326,6 +326,72 @@ app.get("/saved-blog", firebaseVerificationToken, async (req, res) => {
 
 
 
+// get user blogs
+app.get('/my-blogs', firebaseVerificationToken, async(req, res) => {
+  
+  const email = req.user?.email;
+
+  if (!email) {
+      return res.status(400).json({ message: "Invalid user data." });
+    }
+
+  try {
+    const result = await blog_collection
+    .find({userId: email})
+    .sort({updated_at: -1})
+    .toArray();
+
+    res.send(result);
+  } catch(error) {
+    console.log(error);
+    res.status(404).json({ message: "User Blogs Not Found." });
+  }
+})
+
+
+// delete user own blog
+app.delete('/blog/:id', firebaseVerificationToken, async (req, res) => {
+  try {
+    const userId = req.user?.email;     // Authenticated user email
+    const blogId = req.params.id;       // Blog ID in URL
+
+    // --- Validate input ---
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized user" });
+    }
+
+    if (!blogId || blogId.length !== 24) {
+      return res.status(400).json({ message: "Invalid blog ID" });
+    }
+
+    // --- Convert to ObjectId safely ---
+    const objectId = new ObjectId(blogId);
+
+    // --- Find the blog first ---
+    const blog = await blog_collection.findOne({ _id: objectId });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // --- Check ownership ---
+    if (blog.userId !== userId) {
+      return res.status(403).json({ message: "Forbidden: You cannot delete this blog" });
+    }
+
+    // --- Proceed with delete ---
+    await blog_collection.deleteOne({ _id: objectId });
+
+    return res.json({ message: "Blog deleted successfully" });
+
+  } catch (error) {
+    console.error("Delete Blog Error:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
+
+
 
 //404
 app.all(/.*/, (req, res) => {
