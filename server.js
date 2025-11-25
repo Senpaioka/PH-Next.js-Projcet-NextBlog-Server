@@ -12,7 +12,7 @@ require('dotenv').config();
 
 app.use(cors({
   origin: [
-    // 'http://localhost:3000' 
+    'http://localhost:3000',
     'https://ph-next-js-projcet-next-blog-client.vercel.app' 
   ],
   credentials: true,
@@ -113,7 +113,7 @@ app.post("/set-token", (req, res) => {
   const { token } = req.body;
 
   res.cookie("token", token, {
-    httpOnly: true,
+    // httpOnly: true,
     // secure: process.env.NODE_ENV === "production",
     secure: true, 
     // sameSite: "Strict",
