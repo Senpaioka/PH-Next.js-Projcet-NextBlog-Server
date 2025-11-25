@@ -12,7 +12,8 @@ require('dotenv').config();
 
 app.use(cors({
   origin: [
-    'http://localhost:3000' // deployed client
+    // 'http://localhost:3000' 
+    'https://ph-next-js-projcet-next-blog-client.vercel.app' 
   ],
   credentials: true,
   methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
