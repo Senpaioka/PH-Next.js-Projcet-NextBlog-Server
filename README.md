@@ -2,8 +2,11 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 # NextBlog - A blogging SPA
 
-Preview: 
+Preview: https://ph-next-js-projcet-next-blog-client.vercel.app/
 
+## Short Project Description
+
+NextBlog is a modern, responsive blogging platform built with Next.js, Tailwind CSS, and DaisyUI. Users can create, update, delete, and bookmark blogs. Blogs support Markdown content, live previews, and categories. Authentication is handled via Firebase, and the backend uses Node.js with MongoDB to store blogs and user data. The platform also includes search, category filters, and personalized user dashboards.
 
 ## Tech Stack
 
@@ -14,9 +17,10 @@ Next.js, React, Tailwindcss, DaisyUI, Firebase, React-Editor, React-Icons, React
 Express.js, MongoDB, Firebase-Admin
 
 
-## Short Project Description
+## Deployed 
+    * Frontend -> Vercel
+    * Backend -> Vercel
 
-NextBlog is a modern, responsive blogging platform built with Next.js, Tailwind CSS, and DaisyUI. Users can create, update, delete, and bookmark blogs. Blogs support Markdown content, live previews, and categories. Authentication is handled via Firebase, and the backend uses Node.js with MongoDB to store blogs and user data. The platform also includes search, category filters, and personalized user dashboards.
 
 ## Getting Started
 
