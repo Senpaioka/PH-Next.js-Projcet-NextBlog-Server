@@ -107,41 +107,6 @@ const bookmark_collection = database.collection('bookmarks');
 
   /* API Calls */
 
-// cookie setup
-app.post("/set-token", (req, res) => {
-  
-  const { token } = req.body;
-
-  res.cookie("token", token, {
-    // httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    secure: true, 
-    // sameSite: "Strict",
-    sameSite: "none", 
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-  });
-
-  res.send({ message: "Token saved in cookie" });
-});
-
-
-// clear token from cookies
-app.post("/logout", (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
-  });
-
-  return res.send({ message: "Logged out successfully" });
-});
-
-
-// verify cookie/token
-// app.get("/verify-token", firebaseVerificationToken, (req, res) => {
-//   res.send({ valid: true });
-// });
-
 
 // Basic routes
 app.get("/", (req, res) => {
